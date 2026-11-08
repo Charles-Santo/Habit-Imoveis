@@ -9,7 +9,7 @@
         <div class="card bg-white border border-dark rounded-4 p-4 p-md-5 shadow-sm" style="width: 100%; max-width: 600px;">
             <h1 class="text-center text-dark fw-bold mb-4">Novo Anúncio</h1>
 
-            <form action="{{ route('anuncios.store') }}" method="POST">
+            <form action="{{ route('anuncios.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
                 <div class="mb-3">
@@ -18,6 +18,23 @@
                         class="form-control border-dark rounded-4 p-2 @error('titulo') is-invalid @enderror" maxlength="50"
                         value="{{ old('titulo') }}">
                     @error('titulo')
+                        <div class="text-danger small mt-1 fw-bold">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="categoria_id" class="form-label text-dark fw-bold">Categoria</label>
+                    <select id="categoria_id" name="categoria_id"
+                        class="form-select border-dark rounded-4 p-2 @error('categoria_id') is-invalid @enderror">
+                        <option value="">Selecione...</option>
+                        @foreach ($categorias as $categoria)
+                            <option value="{{ $categoria->id }}"
+                                {{ old('categoria_id') == $categoria->id ? 'selected' : '' }}>
+                                {{ $categoria->icone }} {{ $categoria->nome }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('categoria_id')
                         <div class="text-danger small mt-1 fw-bold">{{ $message }}</div>
                     @enderror
                 </div>
@@ -71,6 +88,19 @@
                     @error('descricao')
                         <div class="text-danger small mt-1 fw-bold">{{ $message }}</div>
                     @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label for="imagens" class="form-label text-dark fw-bold">Imagens do imóvel (mínimo 1, máximo 10)</label>
+                    <input type="file" id="imagens" name="imagens[]" multiple
+                        accept="image/jpeg,image/png,image/webp"
+                        class="form-control border-dark rounded-4 p-2 @if ($errors->has('imagens') || $errors->has('imagens.*')) is-invalid @endif">
+                    @error('imagens')
+                        <div class="text-danger small mt-1 fw-bold">{{ $message }}</div>
+                    @enderror
+                    @foreach (collect($errors->get('imagens.*'))->flatten()->unique() as $msg)
+                        <div class="text-danger small mt-1 fw-bold">{{ $msg }}</div>
+                    @endforeach
                 </div>
 
                 <button type="submit" class="btn btn-dark w-100 rounded-pill border border-dark py-3 fw-bold fs-5">Cadastrar

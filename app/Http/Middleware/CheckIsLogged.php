@@ -19,7 +19,6 @@ class CheckIsLogged
             return redirect()->route('login');
         }
 
-        //se tiver usuario na sessao, segue normal
         return $next($request);
     }
 }

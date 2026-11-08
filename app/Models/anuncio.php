@@ -21,8 +21,10 @@ class Anuncio extends Model
         'preco',
         'area',
         'user_id',
+        'categoria_id',
         'telefone',
         'descricao',
+        'publico',
     ];
 
     /**
@@ -33,11 +35,27 @@ class Anuncio extends Model
         return [
             'preco' => 'decimal:2',
             'area' => 'decimal:2',
+            'publico' => 'boolean',
         ];
     }
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function categoria()
+    {
+        return $this->belongsTo(Categoria::class);
+    }
+
+    public function propostas()
+    {
+        return $this->hasMany(Proposta::class);
+    }
+
+    public function imagens()
+    {
+        return $this->hasMany(AnuncioImagem::class);
     }
 }

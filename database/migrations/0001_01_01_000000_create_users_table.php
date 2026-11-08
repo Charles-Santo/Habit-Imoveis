@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->boolean('is_anunciante')->default(false);
-            $table->boolean('is_admin')->default(false);
+            $table->string('role', 20)->default('user');
             $table->string('nome_corretora')->nullable();
             $table->string('cnpj_corretora', 18)->nullable();
+            $table->string('foto')->nullable();
             $table->string('password');
             $table->date('last_login')->nullable();
             $table->timestamps();

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -28,37 +29,22 @@ class AuthController extends Controller
             ]
         );
 
-        $email = $request->input('text_email');
-        $password = $request->input('text_password');
+        $credenciais = [
+            'email' => $request->input('text_email'),
+            'password' => $request->input('text_password'),
+        ];
 
-        $user = User::where('email', $email)
-            ->whereNull('deleted_at')
-            ->first();
-
-        if (!$user) {
+        if (!Auth::attempt($credenciais)) {
             return redirect()->back()
                 ->withInput()
                 ->with('login_error', 'E-mail ou senha incorretos!');
-        } else {
-            if (!password_verify($password, $user->password)) {
-                return redirect()->back()
-                    ->withInput()
-                    ->with('login_error', 'E-mail ou senha incorretos!');
-            }
         }
 
+        $request->session()->regenerate();
+
+        $user = Auth::user();
         $user->last_login = date('Y-m-d H:i:s');
         $user->save();
-
-        session([
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email'=> $user->email,
-                'is_anunciante' => $user->is_anunciante,
-                'is_admin' => $user->is_admin
-            ]
-        ]);
 
         return redirect('/');
     }
@@ -78,6 +64,7 @@ class AuthController extends Controller
                 'is_anunciante' => 'nullable',
                 'nome_corretora' => 'required_if:is_anunciante,1|nullable|string|max:255',
                 'cnpj_corretora' => 'required_if:is_anunciante,1|nullable|string|max:18',
+                'foto' => 'required_if:is_anunciante,1|nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             ],
             [
                 'name.required' => 'O nome é obrigatório.',
@@ -90,6 +77,11 @@ class AuthController extends Controller
                 'password.confirmed' => 'As senhas não coincidem.',
                 'nome_corretora.required_if' => 'O nome da corretora é obrigatório para anunciantes.',
                 'cnpj_corretora.required_if' => 'O CNPJ da corretora é obrigatório para anunciantes.',
+                'foto.required_if' => 'A foto é obrigatória para anunciantes.',
+                'foto.image' => 'O arquivo da foto precisa ser uma imagem.',
+                'foto.mimes' => 'A foto deve ser JPG, PNG ou WEBP.',
+                'foto.max' => 'A foto não pode ter mais de 2 MB.',
+                'foto.uploaded' => 'Não foi possível enviar a foto. Verifique o tamanho do arquivo.',
             ]
         );
 
@@ -99,11 +91,15 @@ class AuthController extends Controller
         $user->password = password_hash($request->input('password'), PASSWORD_DEFAULT);
 
         $isAnunciante = $request->has('is_anunciante') ? true : false;
-        $user->is_anunciante = $isAnunciante;
+        $user->role = $isAnunciante ? User::ROLE_ANUNCIANTE : User::ROLE_USER;
 
         if ($isAnunciante) {
             $user->nome_corretora = $request->input('nome_corretora');
             $user->cnpj_corretora = $request->input('cnpj_corretora');
+
+            if ($request->hasFile('foto')) {
+                $user->foto = $request->file('foto')->store('fotos_perfil', 'public');
+            }
         }
 
         $user->save();
@@ -111,9 +107,12 @@ class AuthController extends Controller
         return redirect()->route('login')->with('success', 'Cadastro realizado com sucesso! Faça seu login.');
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        session()->forget('user');
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return redirect()->route('login');
     }

@@ -13,11 +13,27 @@
             </a>
         </div>
 
+        @if (session('sucesso'))
+            <div class="alert alert-success bg-white border border-dark text-dark rounded-4 fw-bold text-center">
+                {{ session('sucesso') }}
+            </div>
+        @endif
+
         <div class="row row-cols-1 g-4">
             @forelse ($anuncios as $anuncio)
                 <div class="col">
                     <div class="card bg-white border border-dark rounded-4 p-4 shadow-sm">
                         <div class="card-body d-flex flex-column p-0">
+                            @if ($anuncio->imagens->isNotEmpty())
+                                <img src="{{ $anuncio->imagens->first()->url() }}" alt="{{ $anuncio->titulo }}"
+                                    class="w-100 rounded-3 border border-dark mb-3"
+                                    style="height: 240px; object-fit: cover;">
+                            @endif
+                            @if (!$anuncio->publico)
+                                <div class="mb-2">
+                                    <span class="badge bg-secondary text-white rounded-pill px-3 py-2">Não público (proposta aceita)</span>
+                                </div>
+                            @endif
                             <h4 class="card-title text-dark fw-bold mb-2">{{ $anuncio->titulo }}</h4>
 
                             <h5 class="text-dark fw-bolder mb-4">R$ {{ number_format($anuncio->preco, 2, ',', '.') }}</h5>
@@ -46,6 +62,19 @@
                                     <button type="submit"
                                         class="btn btn-outline-danger rounded-pill border border-danger fw-bold px-4">Excluir</button>
                                 </form>
+
+                                @if (!$anuncio->publico)
+                                  @can('publicar', $anuncio)
+                                    <form action="{{ route('anuncios.publicar') }}" method="POST"
+                                        onsubmit="return confirm('Tornar este anúncio público novamente? A proposta aceita será marcada como recusada.')">
+                                        @csrf
+                                        <input type="hidden" name="anuncio_id"
+                                            value="{{ \App\Services\Operations::encryptId($anuncio->id) }}">
+                                        <button type="submit"
+                                            class="btn btn-dark rounded-pill border border-dark fw-bold px-4">Tornar público</button>
+                                    </form>
+                                  @endcan
+                                @endif
                             </div>
                         </div>
                     </div>

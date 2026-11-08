@@ -42,6 +42,14 @@
                     class="btn btn-dark w-100 rounded-pill border border-dark py-2 fw-bold mb-3">ENTRAR</button>
             </form>
 
+            <a href="{{ url('/auth/github') }}" class="btn btn-dark">
+                <i class="bi bi-github"></i>
+                Entrar com GitHub
+            </a>
+            <a href="/auth/google" class="btn btn-danger">
+                Entrar com Google
+            </a>
+
             <div class="text-center">
                 <span class="text-muted small">Não possui uma conta?</span>
                 <a href="{{ route('register') }}" class="text-dark fw-bold text-decoration-none ms-1">Cadastre-se</a>
