@@ -9,7 +9,7 @@
         <div class="card bg-white border border-dark rounded-4 p-4 p-md-5 shadow-sm" style="width: 100%; max-width: 600px;">
             <h1 class="text-center text-dark fw-bold mb-4">Editar Anúncio</h1>
 
-            <form action="{{ route('anuncios.update') }}" method="POST">
+            <form action="{{ route('anuncios.update') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="anuncio_id" value="{{ \App\Services\Operations::encryptId($anuncio->id) }}">
 
@@ -19,6 +19,23 @@
                         class="form-control border-dark rounded-4 p-2 @error('titulo') is-invalid @enderror" maxlength="50"
                         value="{{ old('titulo', $anuncio->titulo) }}">
                     @error('titulo')
+                        <div class="text-danger small mt-1 fw-bold">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="categoria_id" class="form-label text-dark fw-bold">Categoria</label>
+                    <select id="categoria_id" name="categoria_id"
+                        class="form-select border-dark rounded-4 p-2 @error('categoria_id') is-invalid @enderror">
+                        <option value="">Selecione...</option>
+                        @foreach ($categorias as $categoria)
+                            <option value="{{ $categoria->id }}"
+                                {{ old('categoria_id', $anuncio->categoria_id) == $categoria->id ? 'selected' : '' }}>
+                                {{ $categoria->icone }} {{ $categoria->nome }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('categoria_id')
                         <div class="text-danger small mt-1 fw-bold">{{ $message }}</div>
                     @enderror
                 </div>
@@ -74,6 +91,40 @@
                     @error('descricao')
                         <div class="text-danger small mt-1 fw-bold">{{ $message }}</div>
                     @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label text-dark fw-bold">Imagens atuais</label>
+                    @if ($anuncio->imagens->isNotEmpty())
+                        <div class="row g-2 mb-3">
+                            @foreach ($anuncio->imagens as $imagem)
+                                <div class="col-4">
+                                    <img src="{{ $imagem->url() }}" alt="Imagem do imóvel"
+                                        class="w-100 rounded-3 border border-dark mb-1"
+                                        style="height: 100px; object-fit: cover;">
+                                    <div class="form-check">
+                                        <input class="form-check-input border-dark" type="checkbox"
+                                            name="remover_imagens[]" id="remover_{{ $imagem->id }}"
+                                            value="{{ $imagem->id }}">
+                                        <label class="form-check-label small text-dark" for="remover_{{ $imagem->id }}">Remover</label>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-muted small">Este anúncio ainda não possui imagens.</p>
+                    @endif
+
+                    <label for="imagens" class="form-label text-dark fw-bold">Adicionar novas imagens (máximo 10 no total)</label>
+                    <input type="file" id="imagens" name="imagens[]" multiple
+                        accept="image/jpeg,image/png,image/webp"
+                        class="form-control border-dark rounded-4 p-2 @if ($errors->has('imagens') || $errors->has('imagens.*')) is-invalid @endif">
+                    @error('imagens')
+                        <div class="text-danger small mt-1 fw-bold">{{ $message }}</div>
+                    @enderror
+                    @foreach (collect($errors->get('imagens.*'))->flatten()->unique() as $msg)
+                        <div class="text-danger small mt-1 fw-bold">{{ $msg }}</div>
+                    @endforeach
                 </div>
 
                 <button type="submit" class="btn btn-dark w-100 rounded-pill border border-dark py-3 fw-bold fs-5">Salvar

@@ -28,11 +28,19 @@ class UserFactory extends Factory
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'is_anunciante' => $isAnunciante,
-            'is_admin' => false,
+            'role' => $isAnunciante ? User::ROLE_ANUNCIANTE : User::ROLE_USER,
             'nome_corretora' => $isAnunciante ? fake()->company() : null,
             'cnpj_corretora' => $isAnunciante ? fake()->numerify('##.###.###/####-##') : null,
             'password' => static::$password ??= Hash::make('password'),
         ];
+    }
+
+    public function anunciante(): static
+    {
+        return $this->state(fn () => [
+            'role' => User::ROLE_ANUNCIANTE,
+            'nome_corretora' => fake()->company(),
+            'cnpj_corretora' => fake()->numerify('##.###.###/####-##'),
+        ]);
     }
 }

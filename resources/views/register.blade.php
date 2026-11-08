@@ -16,7 +16,7 @@
             <p class="text-muted small mb-0">Junte-se ao Habit para encontrar ou anunciar os melhores imóveis da região.</p>
         </div>
 
-        <form action="{{ route('register.submit') }}" method="POST" novalidate>
+        <form action="{{ route('register.submit') }}" method="POST" enctype="multipart/form-data" novalidate>
             @csrf
 
             <div class="mb-3">
@@ -70,10 +70,18 @@
                     @enderror
                 </div>
 
-                <div class="mb-1">
+                <div class="mb-3">
                     <label for="cnpj_corretora" class="form-label text-dark fw-bold">CNPJ</label>
                     <input type="text" name="cnpj_corretora" id="cnpj_corretora" class="form-control border-dark rounded-4 p-2" value="{{ old('cnpj_corretora') }}" maxlength="18" placeholder="00.000.000/0000-00">
                     @error('cnpj_corretora')
+                        <div class="text-danger small mt-1 fw-bold">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-1">
+                    <label for="foto" class="form-label text-dark fw-bold">Foto (obrigatória para anunciantes)</label>
+                    <input type="file" name="foto" id="foto" accept="image/jpeg,image/png,image/webp" class="form-control border-dark rounded-4 p-2">
+                    @error('foto')
                         <div class="text-danger small mt-1 fw-bold">{{ $message }}</div>
                     @enderror
                 </div>
